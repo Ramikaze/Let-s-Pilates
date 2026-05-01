@@ -15,15 +15,38 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (!libraryContainer || !dropzone) return;
 
+  // --- Dynamic Categorization ---
+  // The user requested sorting by body part / phase rather than just 'level'.
+  const enhancedExercises = (typeof EXERCISES !== 'undefined' ? EXERCISES : []).map(ex => {
+    let category = 'core'; // default
+    const f = (ex.focus || []).join(' ').toLowerCase();
+    
+    if (f.includes('breathing') || f.includes('alignment') || ex.id.includes('hundred')) {
+      category = 'échauffement';
+    } else if (f.includes('legs') || f.includes('hips')) {
+      category = 'jambes';
+    } else if (f.includes('shoulders') || f.includes('arms')) {
+      category = 'bras';
+    } else if (f.includes('spine') || f.includes('back')) {
+      category = 'dos';
+    } else if (f.includes('core')) {
+      category = 'core';
+    }
+
+    return { ...ex, category };
+  });
+
   // State
   let courseItems = [];
   let currentFilter = 'all';
 
   const themes = [
-    { id: 'all', label: 'All' },
-    { id: 'fundamental', label: 'Fundamental' },
-    { id: 'intermediate', label: 'Intermediate' },
-    { id: 'advanced', label: 'Advanced' }
+    { id: 'all', label: 'Tout' },
+    { id: 'échauffement', label: 'Échauffement' },
+    { id: 'jambes', label: 'Jambes' },
+    { id: 'core', label: 'Centre (Core)' },
+    { id: 'bras', label: 'Bras' },
+    { id: 'dos', label: 'Dos' }
   ];
 
   // Initialize
@@ -57,16 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderLibrary() {
     const query = searchInput.value.toLowerCase();
     
-    const filtered = (typeof EXERCISES !== 'undefined' ? EXERCISES : []).filter(ex => {
+    const filtered = enhancedExercises.filter(ex => {
       const matchesSearch = ex.nameEn.toLowerCase().includes(query) || (ex.nameFr && ex.nameFr.toLowerCase().includes(query));
-      const matchesFilter = currentFilter === 'all' || ex.level === currentFilter;
+      const matchesFilter = currentFilter === 'all' || ex.category === currentFilter;
       return matchesSearch && matchesFilter;
     });
 
     libraryContainer.innerHTML = '';
     
     if (filtered.length === 0) {
-      libraryContainer.innerHTML = '<p class="empty-state-text">No exercises found.</p>';
+      libraryContainer.innerHTML = '<p class="empty-state-text">Aucun exercice trouvé.</p>';
       return;
     }
 
@@ -76,12 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
       item.draggable = true;
       item.dataset.id = ex.id;
       item.innerHTML = `
-        <div class="item-drag-handle">☰</div>
+        <div class="item-drag-handle">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        </div>
         <div class="item-content">
           <strong>${ex.nameEn}</strong>
-          <span class="item-meta">${ex.level} • ${ex.duration}</span>
+          <span class="item-meta">${ex.level} • ${ex.category}</span>
         </div>
-        <button class="item-add-btn" aria-label="Add to course">+</button>
+        <button class="item-add-btn" aria-label="Add to course">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
       `;
 
       item.addEventListener('dragstart', handleDragStart);
@@ -103,8 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
     e.dataTransfer.setData('text/plain', draggedItem.dataset.id);
     draggedItem.classList.add('dragging');
     
+    // Add visual feedback
     setTimeout(() => {
       draggedItem.style.opacity = '0.5';
+      if (dragSource === 'library') dropzone.classList.add('highlight-dropzone');
     }, 0);
   }
 
@@ -114,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
       draggedItem.style.opacity = '1';
       draggedItem = null;
     }
+    dropzone.classList.remove('highlight-dropzone');
   }
 
   document.addEventListener('dragend', handleDragEnd);
@@ -136,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dropzone.addEventListener('drop', e => {
       e.preventDefault();
+      dropzone.classList.remove('highlight-dropzone');
       const exId = e.dataTransfer.getData('text/plain');
       
       if (dragSource === 'library' && exId) {
@@ -162,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addExerciseToCourse(id, insertBeforeElement = null) {
-    const ex = EXERCISES.find(e => e.id === id);
+    const ex = enhancedExercises.find(e => e.id === id);
     if (!ex) return;
 
     const instanceId = id + '-' + Date.now();
@@ -177,20 +208,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let mins = parseInt(minText) || 1;
 
     item.innerHTML = `
-      <div class="item-drag-handle">☰</div>
+      <div class="item-drag-handle">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      </div>
       <div class="item-content">
-        <strong>${ex.nameEn}</strong>
-        <div class="item-notes-input" contenteditable="true" placeholder="Add specific cues or variations...">${ex.focus ? ex.focus.join(', ') : ''}</div>
+        <div class="item-header">
+          <strong>${ex.nameEn}</strong>
+          <span class="badge-category">${ex.category}</span>
+        </div>
+        <div class="item-notes-input" contenteditable="true" placeholder="Ajouter des notes, ressorts, variations...">${ex.focus ? ex.focus.join(', ') : ''}</div>
       </div>
       <div class="item-duration">${mins} min</div>
-      <button class="item-remove-btn" aria-label="Remove from course">×</button>
+      <button class="item-remove-btn" aria-label="Remove from course">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     `;
 
     item.addEventListener('dragstart', handleDragStart);
     
     item.querySelector('.item-remove-btn').addEventListener('click', () => {
-      item.remove();
-      updateCourseStateFromDOM();
+      item.classList.add('removing');
+      setTimeout(() => {
+        item.remove();
+        updateCourseStateFromDOM();
+      }, 200); // Wait for animation
     });
 
     const emptyState = dropzone.querySelector('.empty-state');
@@ -215,8 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (courseItems.length === 0 && !dropzone.querySelector('.empty-state')) {
       dropzone.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">⨁</div>
-          <p>Drag exercises here to build your sequence.</p>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <p>Glissez et déposez des exercices ici pour créer votre séance.</p>
         </div>
       `;
     }
@@ -229,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let totalMins = 0;
     courseItems.forEach(item => {
-      const ex = EXERCISES.find(e => e.id === item.id);
+      const ex = enhancedExercises.find(e => e.id === item.id);
       if (ex) {
         let minText = ex.duration.replace(/[^0-9-]/g, '').split('-')[0];
         let mins = parseInt(minText) || 1;
@@ -241,11 +284,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function clearCourse() {
-    if (confirm('Are you sure you want to clear the entire sequence?')) {
+    if (courseItems.length === 0) return;
+    if (confirm('Êtes-vous sûr de vouloir vider le cours entier ?')) {
       dropzone.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">⨁</div>
-          <p>Drag exercises here to build your sequence.</p>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <p>Glissez et déposez des exercices ici pour créer votre séance.</p>
         </div>
       `;
       courseItems = [];
