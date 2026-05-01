@@ -15,6 +15,56 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (!libraryContainer || !dropzone) return;
 
+  // --- Tooltip Setup ---
+  const tooltip = document.createElement('div');
+  tooltip.className = 'exercise-tooltip';
+  document.body.appendChild(tooltip);
+  let tooltipTimeout;
+
+  function handleTooltipOver(e) {
+    if (draggedItem) return; // Don't show while dragging
+    const item = e.target.closest('.builder-item, .course-item');
+    if (!item) return;
+
+    const exId = item.dataset.id;
+    const ex = enhancedExercises.find(x => x.id === exId);
+    if (!ex) return;
+
+    clearTimeout(tooltipTimeout);
+    tooltipTimeout = setTimeout(() => {
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${ex.nameEn} <span class="tooltip-fr">${ex.nameFr}</span></div>
+        <div class="tooltip-body">${ex.objective.substring(0, 160)}${ex.objective.length > 160 ? '...' : ''}</div>
+      `;
+      
+      tooltip.style.display = 'block';
+      const rect = item.getBoundingClientRect();
+      
+      let left = rect.right + 15;
+      let top = rect.top + window.scrollY + (rect.height / 2) - (tooltip.offsetHeight / 2);
+      
+      if (item.classList.contains('course-item') || left + 320 > window.innerWidth) {
+        left = rect.left - 320;
+      }
+      
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      
+      setTimeout(() => tooltip.classList.add('visible'), 10);
+    }, 400); // 400ms delay to prevent flashing
+  }
+
+  function handleTooltipOut(e) {
+    clearTimeout(tooltipTimeout);
+    tooltip.classList.remove('visible');
+    setTimeout(() => {
+      if (!tooltip.classList.contains('visible')) tooltip.style.display = 'none';
+    }, 200);
+  }
+
+  // Hide tooltip globally on scroll or drag
+  window.addEventListener('scroll', handleTooltipOut);
+
   // --- Dynamic Categorization ---
   // The user requested sorting by body part / phase rather than just 'level'.
   const enhancedExercises = (typeof EXERCISES !== 'undefined' ? EXERCISES : []).map(ex => {
@@ -59,6 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', renderLibrary);
     clearBtn.addEventListener('click', clearCourse);
     printBtn.addEventListener('click', () => window.print());
+
+    // Tooltip listeners
+    libraryContainer.addEventListener('mouseover', handleTooltipOver);
+    libraryContainer.addEventListener('mouseout', handleTooltipOut);
+    dropzone.addEventListener('mouseover', handleTooltipOver);
+    dropzone.addEventListener('mouseout', handleTooltipOut);
   }
 
   function renderFilters() {
@@ -124,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let dragSource = null;
 
   function handleDragStart(e) {
+    handleTooltipOut(); // Hide tooltip immediately when dragging starts
     draggedItem = e.target.closest('.draggable');
     dragSource = draggedItem.parentElement.id === 'builderLibrary' ? 'library' : 'course';
     e.dataTransfer.effectAllowed = 'copyMove';
