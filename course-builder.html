@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Builder — Let's Pilates</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo"><img src="images/logo.png" alt="Let's Pilates"><span class="wordmark"><em>Let's</em> Pilates</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="classes.html">Classes</a>
+      <a href="exercises.html">Exercises</a>
+      <a href="programs.html">Programs</a>
+      <a href="course-builder.html" class="active">Builder</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="theory.html">Theory</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <button class="theme-toggle" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+<main>
+  <section class="page-header builder-header">
+    <div class="container">
+      <span class="page-header-eyebrow">Studio Tool</span>
+      <h1><em>Course</em> <strong>Builder</strong></h1>
+      <p class="subtitle">Drag and drop exercises from the library to compose a personalized session.</p>
+    </div>
+  </section>
+
+  <section class="builder-section">
+    <div class="container builder-container">
+      
+      <!-- Sidebar: Exercise Library -->
+      <aside class="builder-sidebar">
+        <div class="builder-sidebar-header">
+          <h3>Library</h3>
+          <div class="filters-search">
+            <input type="search" id="builderSearch" placeholder="Search exercises...">
+          </div>
+          <div class="builder-filters" id="builderFilters">
+            <!-- Filter chips will be injected here -->
+          </div>
+        </div>
+        <div class="builder-exercises-list" id="builderLibrary">
+          <!-- Draggable exercise items will be injected here -->
+        </div>
+      </aside>
+
+      <!-- Main Area: The Course -->
+      <div class="builder-main">
+        <div class="builder-main-header">
+          <div class="builder-stats">
+            <div class="stat-item">
+              <span class="stat-value" id="courseExerciseCount">0</span>
+              <span class="stat-label">Exercises</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="courseDuration">0</span>
+              <span class="stat-label">Min (est.)</span>
+            </div>
+          </div>
+          <div class="builder-actions">
+            <button class="btn-secondary" id="clearCourseBtn">Clear</button>
+            <button class="btn-primary" id="printCourseBtn">Print / Save</button>
+          </div>
+        </div>
+        
+        <div class="builder-dropzone" id="builderDropzone">
+          <div class="empty-state">
+            <div class="empty-icon">⨁</div>
+            <p>Drag exercises here to build your sequence.</p>
+          </div>
+          <!-- Dropped items will appear here -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>A personal reference — built for teaching. Always adapt to the individual client.</p>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/builder.js"></script>
+</body>
+</html>

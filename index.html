@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Pilates — Pilates & Lagree</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo"><img src="images/logo.png" alt="Let's Pilates"><span class="wordmark"><em>Let's</em> Pilates</span></a>
+    <nav class="main-nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="classes.html">Classes</a>
+      <a href="exercises.html">Exercises</a>
+      <a href="programs.html">Programs</a>
+      <a href="course-builder.html">Builder</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="theory.html">Theory</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <button class="theme-toggle" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <img src="images/logo.png" alt="Let's Pilates" class="hero-logo">
+      <span class="hero-eyebrow">Personal Reference</span>
+      <h1><em>Let's</em> <strong>Pilates</strong></h1>
+      <p class="subtitle">A private library of exercises, programs and cueing — for Pilates and Lagree teaching. English first, technical terms in French.</p>
+      <div class="search-bar">
+        <input type="search" id="globalSearch" placeholder="Search an exercise, a cue, a goal…">
+        <div id="searchResults" class="search-results"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad">
+    <div class="container">
+      <div class="section-title">
+        <h2>Ready-to-teach classes</h2>
+      </div>
+      <p style="color: var(--ink-soft); margin-top: -1.5rem; margin-bottom: 2.5rem; font-family: var(--serif); font-style: italic; font-size: 1.05rem;">
+        No prep time? Pick a class, grab your mat, and go.
+      </p>
+      <div class="card-grid">
+        <a href="classes.html" class="card">
+          <span class="card-tag">All classes</span>
+          <span class="card-stat">15</span>
+          <h3>Browse all</h3>
+          <p>Filter by method, level, duration, or goal.</p>
+        </a>
+        <a href="classes.html?duration=short" class="card">
+          <span class="card-tag">Express</span>
+          <h3>Short classes</h3>
+          <p>30 minutes or less — for busy slots.</p>
+        </a>
+        <a href="classes.html?level=fundamental" class="card">
+          <span class="card-tag">Gentle</span>
+          <h3>Beginner friendly</h3>
+          <p>For new clients and foundation work.</p>
+        </a>
+        <a href="classes.html?method=lagree" class="card card-lagree">
+          <span class="card-tag">Lagree</span>
+          <h3>Megaformer</h3>
+          <p>Slow-burn Lagree sessions, ready to teach.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-title">
+        <h2>The library</h2>
+      </div>
+      <div class="card-grid">
+        <a href="exercises.html?method=pilates-mat" class="card">
+          <span class="card-tag">Pilates</span>
+          <span class="card-stat">37</span>
+          <h3>Mat</h3>
+          <p>The classical Matwork repertoire.</p>
+        </a>
+        <a href="exercises.html?method=pilates-reformer" class="card">
+          <span class="card-tag">Pilates</span>
+          <span class="card-stat">60+</span>
+          <h3>Reformer</h3>
+          <p>Full Reformer repertoire.</p>
+        </a>
+        <a href="exercises.html?method=lagree" class="card card-lagree">
+          <span class="card-tag">Lagree</span>
+          <span class="card-stat">50+</span>
+          <h3>Megaformer</h3>
+          <p>Signature Lagree moves.</p>
+        </a>
+        <a href="programs.html" class="card card-programs">
+          <span class="card-tag">Planning</span>
+          <h3>Programs</h3>
+          <p>Long-term client progressions.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-title">
+        <h2>Browse by intention</h2>
+      </div>
+      <div class="card-grid">
+        <a href="classes.html?goal=foundation" class="card">
+          <h3>Foundation</h3>
+          <p>For new clients, safe progressions.</p>
+        </a>
+        <a href="classes.html?goal=mobility" class="card">
+          <h3>Mobility</h3>
+          <p>Spine, hips, fascia release.</p>
+        </a>
+        <a href="classes.html?goal=strength" class="card">
+          <h3>Strength</h3>
+          <p>Core, legs, whole body work.</p>
+        </a>
+        <a href="classes.html?goal=recovery" class="card">
+          <h3>Recovery</h3>
+          <p>Low intensity, nervous system reset.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>A personal reference — built for teaching. Always adapt to the individual client.</p>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
