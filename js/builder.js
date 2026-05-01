@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tooltipTimeout = setTimeout(() => {
       tooltip.innerHTML = `
         <div class="tooltip-title">${ex.nameEn} <span class="tooltip-fr">${ex.nameFr}</span></div>
-        <div class="tooltip-body">${ex.objective.substring(0, 160)}${ex.objective.length > 160 ? '...' : ''}</div>
+        <div class="tooltip-body">${ex.objective.substring(0, 300)}${ex.objective.length > 300 ? '...' : ''}</div>
       `;
       
       tooltip.style.display = 'block';
@@ -104,11 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFilters();
     renderLibrary();
     setupDropzone();
+    setupCalendar();
     updateStats();
 
     searchInput.addEventListener('input', renderLibrary);
     clearBtn.addEventListener('click', clearCourse);
     printBtn.addEventListener('click', () => window.print());
+    
+    const saveBtn = document.getElementById('saveCourseBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveCourseToCalendar);
 
     // Tooltip listeners
     libraryContainer.addEventListener('mouseover', handleTooltipOver);
@@ -182,9 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleDragStart(e) {
     handleTooltipOut(); // Hide tooltip immediately when dragging starts
     draggedItem = e.target.closest('.draggable');
-    dragSource = draggedItem.parentElement.id === 'builderLibrary' ? 'library' : 'course';
+    
+    if (draggedItem.classList.contains('saved-course-card')) {
+      dragSource = 'calendar-card';
+    } else {
+      dragSource = draggedItem.parentElement.id === 'builderLibrary' ? 'library' : 'course';
+    }
+    
     e.dataTransfer.effectAllowed = 'copyMove';
-    e.dataTransfer.setData('text/plain', draggedItem.dataset.id);
+    e.dataTransfer.setData('text/plain', draggedItem.dataset.id || draggedItem.id);
     draggedItem.classList.add('dragging');
     
     // Add visual feedback
@@ -224,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dropzone.addEventListener('drop', e => {
       e.preventDefault();
       dropzone.classList.remove('highlight-dropzone');
+      if (dragSource === 'calendar-card') return; // Cannot drop a whole course into the course builder dropzone
+      
       const exId = e.dataTransfer.getData('text/plain');
       
       if (dragSource === 'library' && exId) {
@@ -233,6 +245,65 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCourseStateFromDOM();
       }
     });
+  }
+
+  function setupCalendar() {
+    const dayDropzones = document.querySelectorAll('.day-dropzone');
+    
+    dayDropzones.forEach(zone => {
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (dragSource === 'calendar-card') {
+          zone.classList.add('drag-over');
+          e.dataTransfer.dropEffect = 'move';
+        }
+      });
+      
+      zone.addEventListener('dragleave', e => {
+        zone.classList.remove('drag-over');
+      });
+      
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        if (dragSource === 'calendar-card' && draggedItem) {
+          zone.appendChild(draggedItem);
+        }
+      });
+    });
+  }
+
+  function saveCourseToCalendar() {
+    if (courseItems.length === 0) {
+      alert("La séance est vide. Ajoutez des exercices avant de sauvegarder.");
+      return;
+    }
+    
+    let courseName = prompt("Nom de la séance ?", "Séance Mat - Full Body");
+    if (!courseName) return;
+    
+    const totalMins = durationEl.textContent;
+    const totalExos = countEl.textContent;
+    
+    const card = document.createElement('div');
+    card.className = 'saved-course-card draggable';
+    card.draggable = true;
+    card.id = 'saved-course-' + Date.now();
+    card.innerHTML = `
+      <strong>${courseName}</strong>
+      <span>${totalMins} min • ${totalExos} exercices</span>
+    `;
+    
+    card.addEventListener('dragstart', handleDragStart);
+    
+    const tray = document.getElementById('savedCoursesTray');
+    if (tray) {
+      tray.appendChild(card);
+    }
+    
+    // Clear course after saving
+    clearCourse(true);
   }
 
   function getDragAfterElement(container, y) {
@@ -340,9 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
     durationEl.textContent = totalMins;
   }
 
-  function clearCourse() {
+  function clearCourse(skipConfirm = false) {
     if (courseItems.length === 0) return;
-    if (confirm('Êtes-vous sûr de vouloir vider le cours entier ?')) {
+    if (skipConfirm || confirm('Êtes-vous sûr de vouloir vider le cours entier ?')) {
       dropzone.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">

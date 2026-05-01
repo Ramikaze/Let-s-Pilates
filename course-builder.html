@@ -37,7 +37,7 @@
   </section>
 
   <section class="builder-section">
-    <div class="container builder-container">
+    <div class="container-fluid builder-container">
       
       <!-- Sidebar: Exercise Library -->
       <aside class="builder-sidebar">
@@ -70,7 +70,8 @@
           </div>
           <div class="builder-actions">
             <button class="btn-secondary" id="clearCourseBtn">Clear</button>
-            <button class="btn-primary" id="printCourseBtn">Print / Save</button>
+            <button class="btn-primary" id="saveCourseBtn">Sauvegarder</button>
+            <button class="btn-primary" id="printCourseBtn" style="background:var(--ink)">Print</button>
           </div>
         </div>
         
@@ -82,6 +83,46 @@
           <!-- Dropped items will appear here -->
         </div>
       </div>
+
+      <!-- Weekly Calendar -->
+      <aside class="builder-calendar">
+        <div class="builder-sidebar-header">
+          <h3>Semaine</h3>
+          <div id="savedCoursesTray" class="day-dropzone" style="min-height: 80px; border: 1px dashed var(--rose-300); padding: 0.5rem; margin-top: 0.5rem; border-radius: 0.5rem;" data-day="tray">
+            <div style="font-size: 0.75rem; color: var(--ink-soft); text-align: center; margin-bottom: 0.5rem;">Séances sauvegardées</div>
+          </div>
+        </div>
+        <div class="calendar-days">
+          <div class="calendar-day" data-day="lundi">
+            <h4>Lundi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="mardi">
+            <h4>Mardi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="mercredi">
+            <h4>Mercredi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="jeudi">
+            <h4>Jeudi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="vendredi">
+            <h4>Vendredi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="samedi">
+            <h4>Samedi</h4>
+            <div class="day-dropzone"></div>
+          </div>
+          <div class="calendar-day" data-day="dimanche">
+            <h4>Dimanche</h4>
+            <div class="day-dropzone"></div>
+          </div>
+        </div>
+      </aside>
 
     </div>
   </section>
