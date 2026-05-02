@@ -563,6 +563,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let minText = String(itemData.duration).replace(/[^0-9-]/g, '').split('-')[0];
     let mins = parseInt(minText) || 1;
 
+    // Build detail content for classes
+    let detailHTML = '';
+    if (itemData.type === 'class') {
+      // Check if it's a pre-configured class from CLASSES
+      const originalClass = (typeof CLASSES !== 'undefined') ? CLASSES.find(c => c.id === id) : null;
+      if (originalClass && originalClass.blocks) {
+        detailHTML = '<div class="class-detail-blocks">';
+        originalClass.blocks.forEach(block => {
+          detailHTML += `<div class="class-block">
+            <div class="class-block-header">${block.name} <span>(${block.duration} min)</span></div>
+            <ul class="class-block-items">`;
+          block.items.forEach(item => {
+            detailHTML += `<li><strong>${item.name}</strong> — ${item.reps}${item.notes ? ` <em>(${item.notes})</em>` : ''}</li>`;
+          });
+          detailHTML += '</ul></div>';
+        });
+        detailHTML += '</div>';
+      } else if (itemData.isCustom && itemData.items) {
+        // Custom class: show saved exercise names
+        detailHTML = '<div class="class-detail-blocks"><div class="class-block"><ul class="class-block-items">';
+        itemData.items.forEach(ex => {
+          const exData = libraryItems.find(e => e.id === ex.id);
+          detailHTML += `<li>${exData ? exData.nameEn : ex.id}</li>`;
+        });
+        detailHTML += '</ul></div></div>';
+      }
+    }
+
     el.innerHTML = `
       <div class="item-drag-handle">
         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
@@ -572,7 +600,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>${itemData.nameEn}</strong>
           <span class="badge-category">${itemData.category}</span>
         </div>
-        <div class="item-notes-input" contenteditable="true" placeholder="Ajouter des notes...">${itemData.type === 'class' ? 'Séance Complète' : ''}</div>
+        ${detailHTML}
+        <div class="item-notes-input" contenteditable="true" placeholder="Ajouter des notes..."></div>
       </div>
       <div class="item-duration">${mins} min</div>
       <button class="item-remove-btn" aria-label="Remove from course">
