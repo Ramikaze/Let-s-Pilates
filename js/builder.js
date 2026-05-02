@@ -678,8 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       .print-footer { margin-top: 3rem; text-align: center; font-size: 0.75rem; color: #aaa; border-top: 1px solid #eee; padding-top: 1rem; }
       
-      @media print { body { padding: 0; } }
-      @page { size: landscape; margin: 1cm; }
+      @media print { body { padding: 1.5cm; } }
+      @page { size: landscape; margin: 0; }
     `;
   }
 
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
     doc.write(`<!DOCTYPE html>
       <html><head><title>${title}</title>
       <style>${getPrintStyles()}
-      ${pageSize === 'portrait' ? '@page { size: portrait; margin: 1.5cm; }' : ''}
+      ${pageSize === 'portrait' ? '@page { size: portrait; margin: 0; }' : ''}
       </style></head><body>
       <div class="print-header">
         ${logoSrc ? `<img src="${logoSrc}" alt="Logo">` : ''}
