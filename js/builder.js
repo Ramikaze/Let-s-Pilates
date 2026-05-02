@@ -62,8 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   }
 
-  // Hide tooltip globally on scroll or drag
   window.addEventListener('scroll', handleTooltipOut);
+
+  // --- Persistent Storage Setup ---
+  let customClasses = JSON.parse(localStorage.getItem('letsPilates_customClasses')) || [];
+  
+  function saveCustomClasses() {
+    localStorage.setItem('letsPilates_customClasses', JSON.stringify(customClasses));
+  }
 
   // --- Dynamic Categorization ---
   const libraryItems = [];
@@ -96,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
       libraryItems.push({
         id: cls.id,
         type: 'class',
+        isCustom: false,
         nameEn: cls.title,
         nameFr: 'Séance Complète',
         level: cls.level,
@@ -105,6 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  // Inject Custom Classes
+  customClasses.forEach(cls => {
+    libraryItems.push({
+      id: cls.id,
+      type: 'class',
+      isCustom: true,
+      nameEn: cls.name,
+      nameFr: 'Création Perso',
+      level: 'Tous niveaux',
+      category: 'classe',
+      duration: cls.duration + ' min',
+      objective: 'Séance personnalisée. ' + cls.count + ' exercices.',
+      items: cls.items
+    });
+  });
 
   // State
   let courseItems = [];
@@ -199,15 +222,48 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>${item.nameEn}</strong>
           <span class="item-meta">${item.type === 'class' ? 'SÉANCE' : item.level} • ${item.category}</span>
         </div>
-        <button class="item-add-btn" aria-label="Add to course">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
+        <div style="display:flex; gap:0.25rem;">
+          ${item.isCustom ? `
+            <button class="item-edit-btn" aria-label="Edit course" style="background:none; border:none; color:var(--ink-soft); cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="item-delete-btn" aria-label="Delete course" style="background:none; border:none; color:var(--ink-soft); cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          ` : ''}
+          <button class="item-add-btn" aria-label="Add to course">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
       `;
 
       el.addEventListener('dragstart', handleDragStart);
       el.querySelector('.item-add-btn').addEventListener('click', () => {
         addExerciseToCourse(item.id);
       });
+      
+      if (item.isCustom) {
+        el.querySelector('.item-delete-btn').addEventListener('click', () => {
+          if (confirm("Supprimer cette classe définitivement ?")) {
+            customClasses = customClasses.filter(c => c.id !== item.id);
+            saveCustomClasses();
+            // Re-sync libraryItems
+            const idx = libraryItems.findIndex(x => x.id === item.id);
+            if (idx > -1) libraryItems.splice(idx, 1);
+            renderLibrary();
+          }
+        });
+        el.querySelector('.item-edit-btn').addEventListener('click', () => {
+          if (courseItems.length > 0 && !confirm("Écraser la séance actuelle pour éditer cette classe ?")) return;
+          clearCourse(true);
+          const cls = customClasses.find(c => c.id === item.id);
+          if (cls && cls.items) {
+            cls.items.forEach(ex => {
+              addExerciseToCourse(ex.id);
+            });
+          }
+        });
+      }
 
       libraryContainer.appendChild(el);
     });
@@ -282,8 +338,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const WEEK_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   let currentDayIndex = 0;
-  let weeklySchedule = {};
-  WEEK_DAYS.forEach(day => weeklySchedule[day] = {});
+  let weeklySchedule = JSON.parse(localStorage.getItem('letsPilates_weeklySchedule')) || {};
+  
+  // Ensure all days exist in loaded schedule
+  WEEK_DAYS.forEach(day => {
+    if (!weeklySchedule[day]) weeklySchedule[day] = {};
+  });
+
+  function saveWeeklySchedule() {
+    localStorage.setItem('letsPilates_weeklySchedule', JSON.stringify(weeklySchedule));
+  }
 
   function renderTimeslots() {
     const timeslotsContainer = document.getElementById('calendarTimeslots');
@@ -317,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
           courseCard.querySelector('.remove-block-btn').addEventListener('click', (e) => {
             delete weeklySchedule[currentDay][e.target.dataset.time];
+            saveWeeklySchedule();
             renderTimeslots();
             renderWeekOverview();
           });
@@ -344,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         zone.classList.remove('drag-over');
         if (dragSource === 'course-handle' && courseItems.length > 0) {
           const time = zone.dataset.time;
-          let courseName = prompt("Nom de la séance ?", "Séance Mat - Full Body");
+          let courseName = prompt("Nom de la séance planifiée ?", "Séance Mat - Full Body");
           if (!courseName) return;
           
           weeklySchedule[currentDay][time] = {
@@ -353,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             count: countEl.textContent,
             items: [...courseItems]
           };
+          saveWeeklySchedule();
           renderTimeslots();
           renderWeekOverview();
           clearCourse(true);
@@ -422,7 +488,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('saveCourseBtn');
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
-        alert("Pour planifier cette séance, glissez le bouton 'Glisser la séance' vers un créneau horaire du calendrier à droite.");
+        if (courseItems.length === 0) {
+          alert("La séance est vide. Ajoutez des exercices d'abord.");
+          return;
+        }
+        let courseName = prompt("Nom de cette nouvelle classe ?", "Ma Classe Sur-Mesure");
+        if (!courseName) return;
+        
+        const newClass = {
+          id: 'custom-' + Date.now(),
+          name: courseName,
+          duration: durationEl.textContent,
+          count: countEl.textContent,
+          items: [...courseItems]
+        };
+        
+        customClasses.push(newClass);
+        saveCustomClasses();
+        
+        libraryItems.push({
+          id: newClass.id,
+          type: 'class',
+          isCustom: true,
+          nameEn: newClass.name,
+          nameFr: 'Création Perso',
+          level: 'Tous niveaux',
+          category: 'classe',
+          duration: newClass.duration + ' min',
+          objective: 'Séance personnalisée. ' + newClass.count + ' exercices.',
+          items: newClass.items
+        });
+        
+        alert("Classe sauvegardée dans la bibliothèque !");
+        clearCourse(true);
+        renderLibrary();
       });
     }
 
