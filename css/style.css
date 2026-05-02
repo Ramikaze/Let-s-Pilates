@@ -2577,6 +2577,12 @@ em { font-family: var(--serif); font-style: italic; font-weight: 300; }
   border-radius: 1rem;
   padding: 1rem;
   min-height: 300px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.week-day-col:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 [data-theme="dark"] .week-day-col {
   background: rgba(0,0,0,0.2);

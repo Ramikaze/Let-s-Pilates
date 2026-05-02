@@ -422,9 +422,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!grid) return;
     grid.innerHTML = '';
     
-    WEEK_DAYS.forEach(day => {
+    WEEK_DAYS.forEach((day, index) => {
       const col = document.createElement('div');
       col.className = 'week-day-col';
+      col.style.cursor = 'pointer';
       col.innerHTML = `<h4>${day}</h4>`;
       
       const daySchedule = weeklySchedule[day];
@@ -444,6 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
           col.appendChild(item);
         });
       }
+      
+      col.addEventListener('click', () => {
+        currentDayIndex = index;
+        renderTimeslots();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      
       grid.appendChild(col);
     });
   }
