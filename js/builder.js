@@ -688,8 +688,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openPrintWindow(title, bodyHTML, pageSize) {
     const logoSrc = document.querySelector('.logo img')?.src || '';
-    const win = window.open('', '_blank', 'width=1100,height=800');
-    win.document.write(`<!DOCTYPE html>
+    
+    // Remove any previous print iframe
+    const oldFrame = document.getElementById('printFrame');
+    if (oldFrame) oldFrame.remove();
+    
+    const iframe = document.createElement('iframe');
+    iframe.id = 'printFrame';
+    iframe.style.cssText = 'position:fixed; top:0; left:0; width:0; height:0; border:none; visibility:hidden;';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
       <html><head><title>${title}</title>
       <style>${getPrintStyles()}
       ${pageSize === 'portrait' ? '@page { size: portrait; margin: 1.5cm; }' : ''}
@@ -701,8 +712,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ${bodyHTML}
       <div class="print-footer">Let's Pilates — Planning généré le ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
       </body></html>`);
-    win.document.close();
-    win.onload = () => { win.print(); };
+    doc.close();
+    
+    // Wait for content to render then print
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }, 300);
   }
 
   function printWeekPlanning() {
