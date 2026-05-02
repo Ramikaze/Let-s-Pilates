@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!item) return;
 
     const exId = item.dataset.id;
-    const ex = enhancedExercises.find(x => x.id === exId);
+    const ex = libraryItems.find(x => x.id === exId);
     if (!ex) return;
 
     clearTimeout(tooltipTimeout);
@@ -66,25 +66,45 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', handleTooltipOut);
 
   // --- Dynamic Categorization ---
-  // The user requested sorting by body part / phase rather than just 'level'.
-  const enhancedExercises = (typeof EXERCISES !== 'undefined' ? EXERCISES : []).map(ex => {
-    let category = 'core'; // default
-    const f = (ex.focus || []).join(' ').toLowerCase();
-    
-    if (f.includes('breathing') || f.includes('alignment') || ex.id.includes('hundred')) {
-      category = 'échauffement';
-    } else if (f.includes('legs') || f.includes('hips')) {
-      category = 'jambes';
-    } else if (f.includes('shoulders') || f.includes('arms')) {
-      category = 'bras';
-    } else if (f.includes('spine') || f.includes('back')) {
-      category = 'dos';
-    } else if (f.includes('core')) {
-      category = 'core';
-    }
+  const libraryItems = [];
+  
+  if (typeof EXERCISES !== 'undefined') {
+    EXERCISES.forEach(ex => {
+      let category = 'core'; // default
+      const f = (ex.focus || []).join(' ').toLowerCase();
+      if (f.includes('breathing') || f.includes('alignment') || ex.id.includes('hundred')) category = 'échauffement';
+      else if (f.includes('legs') || f.includes('hips')) category = 'jambes';
+      else if (f.includes('shoulders') || f.includes('arms')) category = 'bras';
+      else if (f.includes('spine') || f.includes('back')) category = 'dos';
+      else if (f.includes('core')) category = 'core';
 
-    return { ...ex, category };
-  });
+      libraryItems.push({
+        id: ex.id,
+        type: 'exercise',
+        nameEn: ex.nameEn,
+        nameFr: ex.nameFr,
+        level: ex.level,
+        category: category,
+        duration: ex.duration,
+        objective: ex.objective || ''
+      });
+    });
+  }
+
+  if (typeof CLASSES !== 'undefined') {
+    CLASSES.forEach(cls => {
+      libraryItems.push({
+        id: cls.id,
+        type: 'class',
+        nameEn: cls.title,
+        nameFr: 'Séance Complète',
+        level: cls.level,
+        category: 'classe',
+        duration: cls.duration + ' min',
+        objective: cls.description || ''
+      });
+    });
+  }
 
   // State
   let courseItems = [];
@@ -92,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const themes = [
     { id: 'all', label: 'Tout' },
+    { id: 'classe', label: 'Séances (Classes)' },
     { id: 'échauffement', label: 'Échauffement' },
     { id: 'jambes', label: 'Jambes' },
     { id: 'core', label: 'Centre (Core)' },
@@ -111,8 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
     clearBtn.addEventListener('click', clearCourse);
     printBtn.addEventListener('click', () => window.print());
     
-    const saveBtn = document.getElementById('saveCourseBtn');
-    if (saveBtn) saveBtn.addEventListener('click', saveCourseToCalendar);
+    const exportWeekBtn = document.getElementById('exportWeekBtn');
+    if (exportWeekBtn) {
+      exportWeekBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
 
     // Tooltip listeners
     libraryContainer.addEventListener('mouseover', handleTooltipOver);
@@ -140,43 +165,44 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderLibrary() {
     const query = searchInput.value.toLowerCase();
     
-    const filtered = enhancedExercises.filter(ex => {
-      const matchesSearch = ex.nameEn.toLowerCase().includes(query) || (ex.nameFr && ex.nameFr.toLowerCase().includes(query));
-      const matchesFilter = currentFilter === 'all' || ex.category === currentFilter;
+    const filtered = libraryItems.filter(item => {
+      const matchesSearch = item.nameEn.toLowerCase().includes(query) || (item.nameFr && item.nameFr.toLowerCase().includes(query));
+      const matchesFilter = currentFilter === 'all' || item.category === currentFilter;
       return matchesSearch && matchesFilter;
     });
 
     libraryContainer.innerHTML = '';
     
     if (filtered.length === 0) {
-      libraryContainer.innerHTML = '<p class="empty-state-text">Aucun exercice trouvé.</p>';
+      libraryContainer.innerHTML = '<p class="empty-state-text">Aucun élément trouvé.</p>';
       return;
     }
 
-    filtered.forEach(ex => {
-      const item = document.createElement('div');
-      item.className = 'builder-item draggable';
-      item.draggable = true;
-      item.dataset.id = ex.id;
-      item.innerHTML = `
+    filtered.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'builder-item draggable';
+      el.draggable = true;
+      el.dataset.id = item.id;
+      el.dataset.type = item.type;
+      el.innerHTML = `
         <div class="item-drag-handle">
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
         </div>
         <div class="item-content">
-          <strong>${ex.nameEn}</strong>
-          <span class="item-meta">${ex.level} • ${ex.category}</span>
+          <strong>${item.nameEn}</strong>
+          <span class="item-meta">${item.type === 'class' ? 'SÉANCE' : item.level} • ${item.category}</span>
         </div>
         <button class="item-add-btn" aria-label="Add to course">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
       `;
 
-      item.addEventListener('dragstart', handleDragStart);
-      item.querySelector('.item-add-btn').addEventListener('click', () => {
-        addExerciseToCourse(ex.id);
+      el.addEventListener('dragstart', handleDragStart);
+      el.querySelector('.item-add-btn').addEventListener('click', () => {
+        addExerciseToCourse(item.id);
       });
 
-      libraryContainer.appendChild(item);
+      libraryContainer.appendChild(el);
     });
   }
 
@@ -247,63 +273,154 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function setupCalendar() {
-    const dayDropzones = document.querySelectorAll('.day-dropzone');
+  const WEEK_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  let currentDayIndex = 0;
+  let weeklySchedule = {};
+  WEEK_DAYS.forEach(day => weeklySchedule[day] = {});
+
+  function renderTimeslots() {
+    const timeslotsContainer = document.getElementById('calendarTimeslots');
+    if (!timeslotsContainer) return;
+    timeslotsContainer.innerHTML = '';
     
-    dayDropzones.forEach(zone => {
+    const currentDay = WEEK_DAYS[currentDayIndex];
+    document.getElementById('currentDayLabel').textContent = currentDay;
+    
+    for (let h = 7; h <= 21; h++) {
+      for (let m of ['00', '30']) {
+        if (h === 21 && m === '30') continue; // End at 21:00
+        
+        const timeStr = `${h.toString().padStart(2, '0')}:${m}`;
+        const slotEl = document.createElement('div');
+        slotEl.className = 'timeslot';
+        slotEl.innerHTML = `
+          <div class="timeslot-label">${timeStr}</div>
+          <div class="timeslot-dropzone" data-time="${timeStr}"></div>
+        `;
+        
+        const existingCourse = weeklySchedule[currentDay][timeStr];
+        if (existingCourse) {
+          const dropzone = slotEl.querySelector('.timeslot-dropzone');
+          const courseCard = document.createElement('div');
+          courseCard.className = 'calendar-course-block';
+          courseCard.innerHTML = `
+            <strong>${existingCourse.name}</strong>
+            <span>${existingCourse.duration} min • ${existingCourse.count} exos</span>
+            <button class="remove-block-btn" data-time="${timeStr}">×</button>
+          `;
+          courseCard.querySelector('.remove-block-btn').addEventListener('click', (e) => {
+            delete weeklySchedule[currentDay][e.target.dataset.time];
+            renderTimeslots();
+            renderWeekOverview();
+          });
+          dropzone.appendChild(courseCard);
+        }
+        
+        timeslotsContainer.appendChild(slotEl);
+      }
+    }
+    
+    const dropzones = timeslotsContainer.querySelectorAll('.timeslot-dropzone');
+    dropzones.forEach(zone => {
       zone.addEventListener('dragover', e => {
         e.preventDefault();
-        if (dragSource === 'calendar-card') {
+        if (dragSource === 'course-handle') {
           zone.classList.add('drag-over');
-          e.dataTransfer.dropEffect = 'move';
+          e.dataTransfer.dropEffect = 'copy';
         }
       });
-      
       zone.addEventListener('dragleave', e => {
         zone.classList.remove('drag-over');
       });
-      
       zone.addEventListener('drop', e => {
         e.preventDefault();
         zone.classList.remove('drag-over');
-        
-        if (dragSource === 'calendar-card' && draggedItem) {
-          zone.appendChild(draggedItem);
+        if (dragSource === 'course-handle' && courseItems.length > 0) {
+          const time = zone.dataset.time;
+          let courseName = prompt("Nom de la séance ?", "Séance Mat - Full Body");
+          if (!courseName) return;
+          
+          weeklySchedule[currentDay][time] = {
+            name: courseName,
+            duration: durationEl.textContent,
+            count: countEl.textContent,
+            items: [...courseItems]
+          };
+          renderTimeslots();
+          renderWeekOverview();
+          clearCourse(true);
         }
       });
     });
   }
 
-  function saveCourseToCalendar() {
-    if (courseItems.length === 0) {
-      alert("La séance est vide. Ajoutez des exercices avant de sauvegarder.");
-      return;
+  function renderWeekOverview() {
+    const grid = document.getElementById('weekGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    WEEK_DAYS.forEach(day => {
+      const col = document.createElement('div');
+      col.className = 'week-day-col';
+      col.innerHTML = `<h4>${day}</h4>`;
+      
+      const daySchedule = weeklySchedule[day];
+      const times = Object.keys(daySchedule).sort();
+      
+      if (times.length === 0) {
+        col.innerHTML += `<div style="font-size:0.8rem; color:var(--ink-soft); text-align:center;">Vide</div>`;
+      } else {
+        times.forEach(time => {
+          const course = daySchedule[time];
+          const item = document.createElement('div');
+          item.className = 'week-overview-item';
+          item.innerHTML = `
+            <span class="week-overview-item-time">${time}</span>
+            <span class="week-overview-item-name">${course.name}</span>
+          `;
+          col.appendChild(item);
+        });
+      }
+      grid.appendChild(col);
+    });
+  }
+
+  function setupCalendar() {
+    const prevBtn = document.getElementById('prevDayBtn');
+    const nextBtn = document.getElementById('nextDayBtn');
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      currentDayIndex = (currentDayIndex - 1 + 7) % 7;
+      renderTimeslots();
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      currentDayIndex = (currentDayIndex + 1) % 7;
+      renderTimeslots();
+    });
+    
+    const dragHandle = document.getElementById('courseDragHandle');
+    if (dragHandle) {
+      dragHandle.addEventListener('dragstart', (e) => {
+        if (courseItems.length === 0) {
+          e.preventDefault();
+          alert("La séance est vide. Ajoutez des exercices avant de planifier.");
+          return;
+        }
+        dragSource = 'course-handle';
+        e.dataTransfer.effectAllowed = 'copy';
+        e.dataTransfer.setData('text/plain', 'course'); 
+      });
     }
     
-    let courseName = prompt("Nom de la séance ?", "Séance Mat - Full Body");
-    if (!courseName) return;
-    
-    const totalMins = durationEl.textContent;
-    const totalExos = countEl.textContent;
-    
-    const card = document.createElement('div');
-    card.className = 'saved-course-card draggable';
-    card.draggable = true;
-    card.id = 'saved-course-' + Date.now();
-    card.innerHTML = `
-      <strong>${courseName}</strong>
-      <span>${totalMins} min • ${totalExos} exercices</span>
-    `;
-    
-    card.addEventListener('dragstart', handleDragStart);
-    
-    const tray = document.getElementById('savedCoursesTray');
-    if (tray) {
-      tray.appendChild(card);
+    // Handle the old save button to alert the new workflow
+    const saveBtn = document.getElementById('saveCourseBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        alert("Pour planifier cette séance, glissez le bouton 'Glisser la séance' vers un créneau horaire du calendrier à droite.");
+      });
     }
-    
-    // Clear course after saving
-    clearCourse(true);
+
+    renderTimeslots();
+    renderWeekOverview();
   }
 
   function getDragAfterElement(container, y) {
@@ -321,30 +438,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addExerciseToCourse(id, insertBeforeElement = null) {
-    const ex = enhancedExercises.find(e => e.id === id);
-    if (!ex) return;
+    const itemData = libraryItems.find(e => e.id === id);
+    if (!itemData) return;
 
     const instanceId = id + '-' + Date.now();
     
-    const item = document.createElement('div');
-    item.className = 'course-item draggable';
-    item.draggable = true;
-    item.dataset.id = id;
-    item.dataset.instanceId = instanceId;
+    const el = document.createElement('div');
+    el.className = 'course-item draggable';
+    if (itemData.type === 'class') el.classList.add('is-class-item');
+    el.draggable = true;
+    el.dataset.id = id;
+    el.dataset.instanceId = instanceId;
+    el.dataset.type = itemData.type;
     
-    let minText = ex.duration.replace(/[^0-9-]/g, '').split('-')[0];
+    let minText = String(itemData.duration).replace(/[^0-9-]/g, '').split('-')[0];
     let mins = parseInt(minText) || 1;
 
-    item.innerHTML = `
+    el.innerHTML = `
       <div class="item-drag-handle">
         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
       </div>
       <div class="item-content">
         <div class="item-header">
-          <strong>${ex.nameEn}</strong>
-          <span class="badge-category">${ex.category}</span>
+          <strong>${itemData.nameEn}</strong>
+          <span class="badge-category">${itemData.category}</span>
         </div>
-        <div class="item-notes-input" contenteditable="true" placeholder="Ajouter des notes, ressorts, variations...">${ex.focus ? ex.focus.join(', ') : ''}</div>
+        <div class="item-notes-input" contenteditable="true" placeholder="Ajouter des notes...">${itemData.type === 'class' ? 'Séance Complète' : ''}</div>
       </div>
       <div class="item-duration">${mins} min</div>
       <button class="item-remove-btn" aria-label="Remove from course">
@@ -352,23 +471,23 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
     `;
 
-    item.addEventListener('dragstart', handleDragStart);
+    el.addEventListener('dragstart', handleDragStart);
     
-    item.querySelector('.item-remove-btn').addEventListener('click', () => {
-      item.classList.add('removing');
+    el.querySelector('.item-remove-btn').addEventListener('click', () => {
+      el.classList.add('removing');
       setTimeout(() => {
-        item.remove();
+        el.remove();
         updateCourseStateFromDOM();
-      }, 200); // Wait for animation
+      }, 200);
     });
 
     const emptyState = dropzone.querySelector('.empty-state');
     if (emptyState) emptyState.remove();
 
     if (insertBeforeElement) {
-      dropzone.insertBefore(item, insertBeforeElement);
+      dropzone.insertBefore(el, insertBeforeElement);
     } else {
-      dropzone.appendChild(item);
+      dropzone.appendChild(el);
     }
 
     updateCourseStateFromDOM();
@@ -400,9 +519,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let totalMins = 0;
     courseItems.forEach(item => {
-      const ex = enhancedExercises.find(e => e.id === item.id);
-      if (ex) {
-        let minText = ex.duration.replace(/[^0-9-]/g, '').split('-')[0];
+      const itm = libraryItems.find(e => e.id === item.id);
+      if (itm) {
+        let minText = String(itm.duration).replace(/[^0-9-]/g, '').split('-')[0];
         let mins = parseInt(minText) || 1;
         totalMins += mins;
       }

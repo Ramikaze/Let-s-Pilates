@@ -68,10 +68,13 @@
               <span class="stat-label">Min (est.)</span>
             </div>
           </div>
-          <div class="builder-actions">
+          <div class="builder-actions" style="display:flex; align-items:center; gap: 1rem;">
+            <div id="courseDragHandle" class="course-drag-handle" draggable="true" title="Glisser toute la séance vers le calendrier">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Glisser la séance</span>
+            </div>
             <button class="btn-secondary" id="clearCourseBtn">Clear</button>
             <button class="btn-primary" id="saveCourseBtn">Sauvegarder</button>
-            <button class="btn-primary" id="printCourseBtn" style="background:var(--ink)">Print</button>
           </div>
         </div>
         
@@ -84,46 +87,33 @@
         </div>
       </div>
 
-      <!-- Weekly Calendar -->
+      <!-- Weekly Calendar (Day View) -->
       <aside class="builder-calendar">
         <div class="builder-sidebar-header">
-          <h3>Semaine</h3>
-          <div id="savedCoursesTray" class="day-dropzone" style="min-height: 80px; border: 1px dashed var(--rose-300); padding: 0.5rem; margin-top: 0.5rem; border-radius: 0.5rem;" data-day="tray">
-            <div style="font-size: 0.75rem; color: var(--ink-soft); text-align: center; margin-bottom: 0.5rem;">Séances sauvegardées</div>
+          <div class="day-navigation">
+            <button id="prevDayBtn" aria-label="Previous day">◀</button>
+            <h3 id="currentDayLabel">Lundi</h3>
+            <button id="nextDayBtn" aria-label="Next day">▶</button>
           </div>
         </div>
-        <div class="calendar-days">
-          <div class="calendar-day" data-day="lundi">
-            <h4>Lundi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="mardi">
-            <h4>Mardi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="mercredi">
-            <h4>Mercredi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="jeudi">
-            <h4>Jeudi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="vendredi">
-            <h4>Vendredi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="samedi">
-            <h4>Samedi</h4>
-            <div class="day-dropzone"></div>
-          </div>
-          <div class="calendar-day" data-day="dimanche">
-            <h4>Dimanche</h4>
-            <div class="day-dropzone"></div>
-          </div>
+        <div class="calendar-timeslots" id="calendarTimeslots">
+          <!-- Timeslots injected by JS -->
         </div>
       </aside>
 
+    </div>
+  </section>
+
+  <!-- Week Overview Section -->
+  <section class="week-overview-section" id="weekOverviewSection">
+    <div class="container-fluid">
+      <div class="week-overview-header">
+        <h2>Planning Global</h2>
+        <button class="btn-primary" id="exportWeekBtn">Exporter PDF / Imprimer</button>
+      </div>
+      <div class="week-grid" id="weekGrid">
+        <!-- Week grid injected by JS -->
+      </div>
     </div>
   </section>
 </main>
