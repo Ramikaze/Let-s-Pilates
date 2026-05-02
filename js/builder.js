@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const countEl = document.getElementById('courseExerciseCount');
   const durationEl = document.getElementById('courseDuration');
   const clearBtn = document.getElementById('clearCourseBtn');
-  const printBtn = document.getElementById('printCourseBtn');
   
   if (!libraryContainer || !dropzone) return;
 
@@ -155,8 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     clearBtn.addEventListener('click', clearCourse);
     
     // Print Week button
-    printBtn.addEventListener('click', () => printWeekPlanning());
-    
     const exportWeekBtn = document.getElementById('exportWeekBtn');
     if (exportWeekBtn) {
       exportWeekBtn.addEventListener('click', () => printWeekPlanning());
