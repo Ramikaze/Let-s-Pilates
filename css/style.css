@@ -2207,15 +2207,21 @@ em { font-family: var(--serif); font-style: italic; font-weight: 300; }
   }
   
   .site-header {
+    display: flex !important;
     background: white !important;
-    border-bottom: 2px solid #000 !important;
-    position: relative !important;
+    border-bottom: 2px solid #2d2a2a !important;
+    position: static !important;
     box-shadow: none !important;
-    padding: 1rem 0 !important;
+    padding: 1.5rem 0 !important;
+    width: 100% !important;
   }
   
   .site-header .logo {
     color: black !important;
+    text-decoration: none !important;
+  }
+  .site-header .logo img {
+    filter: invert(0) !important;
   }
 
   /* Week Print Mode */
@@ -2273,11 +2279,38 @@ em { font-family: var(--serif); font-style: italic; font-weight: 300; }
     box-shadow: none !important;
     background: white !important;
     position: static !important;
+    padding: 2rem !important;
+  }
+
+  body.print-day #currentDayLabel {
+    font-size: 2.5rem !important;
+    color: #c16254 !important;
+    text-align: center !important;
+    margin-bottom: 2rem !important;
+    border-bottom: 2px solid rgba(0,0,0,0.05) !important;
+    padding-bottom: 1rem !important;
   }
   
   body.print-day .timeslot {
-    border-bottom: 1px solid #ccc !important;
+    display: flex !important;
+    align-items: center !important;
+    border-bottom: 1px dashed #ccc !important;
     page-break-inside: avoid;
+    padding: 1rem 0 !important;
+    min-height: auto !important;
+  }
+  
+  body.print-day .timeslot-label {
+    font-size: 1.25rem !important;
+    font-weight: bold !important;
+    color: #555 !important;
+    width: 80px !important;
+  }
+
+  body.print-day .timeslot-dropzone {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   /* Hide empty timeslots on print */
@@ -2286,10 +2319,25 @@ em { font-family: var(--serif); font-style: italic; font-weight: 300; }
   }
   
   body.print-day .calendar-course-block {
-    border-left: 4px solid #000 !important;
-    background: #f9f9f9 !important;
+    border-left: 6px solid #c16254 !important;
+    background: #f8f5f4 !important;
     box-shadow: none !important;
     color: black !important;
+    padding: 1.5rem !important;
+    border-radius: 0.5rem !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+  
+  body.print-day .calendar-course-block strong {
+    font-size: 1.25rem !important;
+    display: block !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  body.print-day .calendar-course-block span {
+    font-size: 1rem !important;
+    color: #666 !important;
   }
 }
 

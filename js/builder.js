@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     printBtn.addEventListener('click', () => {
       document.body.classList.add('print-week');
       document.body.classList.remove('print-day');
-      window.print();
+      setTimeout(() => window.print(), 100);
     });
     
     const exportWeekBtn = document.getElementById('exportWeekBtn');
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       exportWeekBtn.addEventListener('click', () => {
         document.body.classList.add('print-week');
         document.body.classList.remove('print-day');
-        window.print();
+        setTimeout(() => window.print(), 100);
       });
     }
 
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
       printDayBtn.addEventListener('click', () => {
         document.body.classList.add('print-day');
         document.body.classList.remove('print-week');
-        window.print();
+        setTimeout(() => window.print(), 100);
       });
     }
 
