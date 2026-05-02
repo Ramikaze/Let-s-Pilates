@@ -130,11 +130,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     searchInput.addEventListener('input', renderLibrary);
     clearBtn.addEventListener('click', clearCourse);
-    printBtn.addEventListener('click', () => window.print());
+    // Default print from browser/menu (optional, defaults to week if triggered externally)
+    printBtn.addEventListener('click', () => {
+      document.body.classList.add('print-week');
+      document.body.classList.remove('print-day');
+      window.print();
+    });
     
     const exportWeekBtn = document.getElementById('exportWeekBtn');
     if (exportWeekBtn) {
       exportWeekBtn.addEventListener('click', () => {
+        document.body.classList.add('print-week');
+        document.body.classList.remove('print-day');
         window.print();
       });
     }
@@ -418,6 +425,20 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Pour planifier cette séance, glissez le bouton 'Glisser la séance' vers un créneau horaire du calendrier à droite.");
       });
     }
+
+    const printDayBtn = document.getElementById('printDayBtn');
+    if (printDayBtn) {
+      printDayBtn.addEventListener('click', () => {
+        document.body.classList.add('print-day');
+        document.body.classList.remove('print-week');
+        window.print();
+      });
+    }
+
+    // Clean up print classes after printing (browsers usually fire this after dialog closes)
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-week', 'print-day');
+    });
 
     renderTimeslots();
     renderWeekOverview();

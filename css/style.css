@@ -2196,54 +2196,95 @@ em { font-family: var(--serif); font-style: italic; font-weight: 300; }
 
 /* Print Styles */
 @media print {
-  .site-header, .site-footer, .builder-sidebar, .builder-actions, .item-remove-btn, .item-drag-handle, .builder-main-header, .builder-calendar, .week-overview-header, .builder-dropzone {
+  /* Common hide */
+  .builder-sidebar, .builder-actions, .item-remove-btn, .item-drag-handle, .builder-main-header, .remove-block-btn, .day-navigation button, .week-overview-header, .theme-toggle, .menu-toggle, .main-nav {
     display: none !important;
   }
+  
   body {
     background: white !important;
+    color: black !important;
   }
-  .builder-container {
+  
+  .site-header {
+    background: white !important;
+    border-bottom: 2px solid #000 !important;
+    position: relative !important;
+    box-shadow: none !important;
+    padding: 1rem 0 !important;
+  }
+  
+  .site-header .logo {
+    color: black !important;
+  }
+
+  /* Week Print Mode */
+  body.print-week .builder-section, 
+  body.print-week .page-header {
     display: none !important;
   }
-  .week-overview-section {
+  
+  body.print-week .week-overview-section {
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
   }
-  .week-grid {
+  
+  body.print-week .week-grid {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     gap: 0.5rem !important;
   }
-  .week-day-col {
+  
+  body.print-week .week-day-col {
     background: white !important;
     border: 1px solid #ccc !important;
     border-radius: 0 !important;
     padding: 0.5rem !important;
     min-height: auto !important;
   }
-  .week-overview-item {
+  
+  body.print-week .week-overview-item {
     border: 1px solid #ddd !important;
     background: #f9f9f9 !important;
     page-break-inside: avoid;
+    color: black !important;
   }
-    border: none;
-    padding: 0;
-    background: none;
+
+  /* Day Print Mode */
+  body.print-day .builder-sidebar,
+  body.print-day .builder-main,
+  body.print-day .week-overview-section,
+  body.print-day .page-header {
+    display: none !important;
   }
-  .course-item {
-    border: none;
-    border-bottom: 1px solid #ccc;
-    border-radius: 0;
-    padding: 1rem 0;
-    page-break-inside: avoid;
-    background: none !important;
+  
+  body.print-day .builder-container {
+    display: block !important;
+    padding: 0 !important;
+  }
+  
+  body.print-day .builder-calendar {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    border: none !important;
     box-shadow: none !important;
-    transform: none !important;
+    background: white !important;
+    position: static !important;
   }
-  .item-notes-input {
-    border: none;
+  
+  body.print-day .timeslot {
+    border-bottom: 1px solid #ccc !important;
+    page-break-inside: avoid;
+  }
+  
+  body.print-day .calendar-course-block {
+    border-left: 4px solid #000 !important;
+    background: #f9f9f9 !important;
+    box-shadow: none !important;
+    color: black !important;
   }
 }
 

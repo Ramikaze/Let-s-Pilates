@@ -92,7 +92,10 @@
         <div class="builder-sidebar-header">
           <div class="day-navigation">
             <button id="prevDayBtn" aria-label="Previous day">◀</button>
-            <h3 id="currentDayLabel">Lundi</h3>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <h3 id="currentDayLabel" style="margin-bottom: 0.25rem;">Lundi</h3>
+              <button id="printDayBtn" style="font-size: 0.75rem; color: var(--ink-soft); background: none; border: 1px solid rgba(0,0,0,0.1); padding: 0.2rem 0.5rem; border-radius: 1rem;">Imprimer ce jour</button>
+            </div>
             <button id="nextDayBtn" aria-label="Next day">▶</button>
           </div>
         </div>
