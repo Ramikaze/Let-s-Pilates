@@ -153,20 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     searchInput.addEventListener('input', renderLibrary);
     clearBtn.addEventListener('click', clearCourse);
-    // Default print from browser/menu (optional, defaults to week if triggered externally)
-    printBtn.addEventListener('click', () => {
-      document.body.classList.add('print-week');
-      document.body.classList.remove('print-day');
-      setTimeout(() => window.print(), 100);
-    });
+    
+    // Print Week button
+    printBtn.addEventListener('click', () => printWeekPlanning());
     
     const exportWeekBtn = document.getElementById('exportWeekBtn');
     if (exportWeekBtn) {
-      exportWeekBtn.addEventListener('click', () => {
-        document.body.classList.add('print-week');
-        document.body.classList.remove('print-day');
-        setTimeout(() => window.print(), 100);
-      });
+      exportWeekBtn.addEventListener('click', () => printWeekPlanning());
     }
 
     // Tooltip listeners
@@ -527,17 +520,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const printDayBtn = document.getElementById('printDayBtn');
     if (printDayBtn) {
-      printDayBtn.addEventListener('click', () => {
-        document.body.classList.add('print-day');
-        document.body.classList.remove('print-week');
-        setTimeout(() => window.print(), 100);
-      });
+      printDayBtn.addEventListener('click', () => printDayPlanning());
     }
-
-    // Clean up print classes after printing (browsers usually fire this after dialog closes)
-    window.addEventListener('afterprint', () => {
-      document.body.classList.remove('print-week', 'print-day');
-    });
 
     renderTimeslots();
     renderWeekOverview();
@@ -664,6 +648,105 @@ document.addEventListener('DOMContentLoaded', () => {
       courseItems = [];
       updateStats();
     }
+  }
+
+  // ===== PRINT FUNCTIONS =====
+
+  function getPrintStyles() {
+    return `
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; color: #2d2a2a; background: white; padding: 2rem; }
+      .print-header { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 2px solid #2d2a2a; margin-bottom: 2rem; }
+      .print-header img { width: 48px; height: 48px; border-radius: 50%; }
+      .print-header h1 { font-family: Georgia, serif; font-size: 1.5rem; font-weight: normal; }
+      .print-header h1 em { font-style: italic; color: #c16254; }
+      .print-title { text-align: center; font-size: 1.5rem; color: #c16254; margin-bottom: 2rem; font-family: Georgia, serif; }
+      
+      /* Week Grid */
+      .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+      .week-col { border: 1px solid #ddd; border-radius: 0.5rem; padding: 0.75rem; min-height: 200px; }
+      .week-col h3 { font-size: 0.95rem; color: #c16254; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
+      .week-item { background: #f8f5f4; border: 1px solid #eee; border-left: 4px solid #c16254; border-radius: 0.25rem; padding: 0.5rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+      .week-item-time { font-weight: bold; color: #c16254; }
+      .week-item-name { display: block; margin-top: 0.15rem; }
+      .week-empty { text-align: center; color: #bbb; font-size: 0.8rem; padding-top: 1rem; }
+      
+      /* Day View */
+      .day-title { text-align: center; font-size: 2.5rem; color: #c16254; margin-bottom: 2rem; border-bottom: 2px solid #f0e8e6; padding-bottom: 1rem; font-family: Georgia, serif; }
+      .slot { display: flex; align-items: flex-start; padding: 1rem 0; border-bottom: 1px dashed #ddd; }
+      .slot-time { width: 80px; font-size: 1.2rem; font-weight: bold; color: #555; flex-shrink: 0; padding-top: 0.25rem; }
+      .slot-course { flex: 1; background: #f8f5f4; border-left: 6px solid #c16254; border-radius: 0.5rem; padding: 1rem 1.5rem; }
+      .slot-course strong { font-size: 1.15rem; display: block; margin-bottom: 0.25rem; }
+      .slot-course span { color: #666; font-size: 0.95rem; }
+      
+      .print-footer { margin-top: 3rem; text-align: center; font-size: 0.75rem; color: #aaa; border-top: 1px solid #eee; padding-top: 1rem; }
+      
+      @media print { body { padding: 0; } }
+      @page { size: landscape; margin: 1cm; }
+    `;
+  }
+
+  function openPrintWindow(title, bodyHTML, pageSize) {
+    const logoSrc = document.querySelector('.logo img')?.src || '';
+    const win = window.open('', '_blank', 'width=1100,height=800');
+    win.document.write(`<!DOCTYPE html>
+      <html><head><title>${title}</title>
+      <style>${getPrintStyles()}
+      ${pageSize === 'portrait' ? '@page { size: portrait; margin: 1.5cm; }' : ''}
+      </style></head><body>
+      <div class="print-header">
+        ${logoSrc ? `<img src="${logoSrc}" alt="Logo">` : ''}
+        <h1><em>Let's</em> Pilates</h1>
+      </div>
+      ${bodyHTML}
+      <div class="print-footer">Let's Pilates — Planning généré le ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      </body></html>`);
+    win.document.close();
+    win.onload = () => { win.print(); };
+  }
+
+  function printWeekPlanning() {
+    let gridHTML = '<p class="print-title">Planning Hebdomadaire</p><div class="week-grid">';
+    WEEK_DAYS.forEach(day => {
+      gridHTML += `<div class="week-col"><h3>${day}</h3>`;
+      const schedule = weeklySchedule[day];
+      const times = Object.keys(schedule).sort();
+      if (times.length === 0) {
+        gridHTML += '<div class="week-empty">—</div>';
+      } else {
+        times.forEach(time => {
+          const c = schedule[time];
+          gridHTML += `<div class="week-item"><span class="week-item-time">${time}</span><span class="week-item-name">${c.name}</span></div>`;
+        });
+      }
+      gridHTML += '</div>';
+    });
+    gridHTML += '</div>';
+    openPrintWindow('Planning Hebdomadaire — Let\'s Pilates', gridHTML, 'landscape');
+  }
+
+  function printDayPlanning() {
+    const currentDay = WEEK_DAYS[currentDayIndex];
+    const schedule = weeklySchedule[currentDay];
+    const times = Object.keys(schedule).sort();
+    
+    let bodyHTML = `<p class="day-title">${currentDay}</p>`;
+    
+    if (times.length === 0) {
+      bodyHTML += '<p style="text-align:center; color:#999; font-size:1.2rem; margin-top:3rem;">Aucun cours planifié pour ce jour.</p>';
+    } else {
+      times.forEach(time => {
+        const c = schedule[time];
+        bodyHTML += `<div class="slot">
+          <div class="slot-time">${time}</div>
+          <div class="slot-course">
+            <strong>${c.name}</strong>
+            <span>${c.duration} min • ${c.count} exercices</span>
+          </div>
+        </div>`;
+      });
+    }
+    openPrintWindow(`${currentDay} — Let\'s Pilates`, bodyHTML, 'portrait');
   }
 
   init();
